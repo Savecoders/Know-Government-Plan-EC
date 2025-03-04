@@ -1,5 +1,5 @@
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
-import { OpenAIEmbeddings } from '@langchain/openai';
+import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
 import { MemoryVectorStore } from 'langchain/vectorstores/memory';
 
 export async function createVectorStore(pdfPaths: string[]) {
@@ -13,11 +13,12 @@ export async function createVectorStore(pdfPaths: string[]) {
       docs.push(...pdf);
     }
 
-    // Create vector store with OpenAI embeddings
     const vectorStore = await MemoryVectorStore.fromDocuments(
       docs,
-      new OpenAIEmbeddings({
-        openAIApiKey: process.env.OPEN_IA_KEY,
+      new GoogleGenerativeAIEmbeddings({
+        apiKey: process.env.GEMINI_API_KEY,
+        modelName: 'embedding-001',
+        maxRetries: 2,
       }),
     );
 

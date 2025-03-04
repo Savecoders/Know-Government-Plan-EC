@@ -1,39 +1,52 @@
-import { OpenAI } from '@langchain/openai';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createStuffDocumentsChain } from 'langchain/chains/combine_documents';
 import { createRetrievalChain } from 'langchain/chains/retrieval';
 import { createVectorStore } from '@/lib/pdf-loader';
 import { NextResponse } from 'next/server';
 import { PromptTemplate } from '@langchain/core/prompts';
 
-const pdfPaths = ['/path/to/your/first.pdf', '/path/to/your/second.pdf'];
+interface QuestionRequest {
+  question: string;
+}
+
+const pdfPaths = ['data/pt_adn.pdf', 'data/pt_r5.pdf'];
 
 // Initialize vector store
 let vectorStore: any = null;
-
 export async function POST(req: Request) {
   try {
-    const { question } = await req.json();
+    const { question } = (await req.json()) as QuestionRequest;
+
+    if (!question) {
+      return NextResponse.json({ error: 'Question is required' }, { status: 400 });
+    }
 
     // Initialize vector store if not already done
     if (!vectorStore) {
       vectorStore = await createVectorStore(pdfPaths);
     }
 
-    // Create model
-    const model = new OpenAI({
-      openAIApiKey: process.env.OPEN_IA_KEY,
-      temperature: 0,
+    // Create Gemini model with Langchain
+    const model = new ChatGoogleGenerativeAI({
+      modelName: 'gemini-2.0-flash',
+      apiKey: process.env.GEMINI_API_KEY,
+      temperature: 0.7,
+      maxRetries: 3,
     });
 
     // Create prompt template
-    const prompt = PromptTemplate.fromTemplate(`
-      Answer the question based only on the following context:
-      {context}
+    const prompt = PromptTemplate.fromTemplate(
+      `
+      You are a helpful AI assistant who answers questions based on the provided PDF documents about the political parties' work plan.
+      Use only the context provided to answer the question. If you don't know the answer or can't find it in the context, say so.
+      and respond with a helpful message in spanish.
 
-      Question: {question}
+      Context: {context}
+      Question: {input}
 
-      Answer:
-    `);
+      Answer: Let me answer based on the provided context.
+    `.trim(),
+    );
 
     // Create document chain
     const documentChain = await createStuffDocumentsChain({
@@ -47,8 +60,11 @@ export async function POST(req: Request) {
       retriever: vectorStore.asRetriever(),
     });
 
-    // Get answer
-    const response = await retrievalChain.invoke({ ...question });
+    console.log('Processing question:', question);
+
+    const response = await retrievalChain.invoke({
+      input: question,
+    });
 
     return NextResponse.json({ answer: response.answer });
   } catch (error) {
