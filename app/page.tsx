@@ -12,7 +12,7 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch('/api/ask', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ export default function Home() {
       const data = await response.json();
       setAnswer(data.answer);
     } catch (error) {
-      console.error('Error:', error);
+      setAnswer('Failed to process question');
     } finally {
       setLoading(false);
     }
@@ -45,8 +45,8 @@ export default function Home() {
       </form>
 
       {answer && (
-        <div className="mt-4 rounded bg-gray-100 p-4">
-          <h2 className="font-bold">Answer:</h2>
+        <div className="mt-8 rounded-2xl bg-zinc-900 p-8">
+          <h2 className="font-bold">Respuesta:</h2>
           <p>{answer}</p>
         </div>
       )}
