@@ -18,7 +18,7 @@ export async function createVectorStore(pdfPaths: string[]) {
       new GoogleGenerativeAIEmbeddings({
         apiKey: process.env.GEMINI_API_KEY,
         modelName: 'embedding-001',
-        maxRetries: 2,
+        maxRetries: 4,
       }),
     );
 
