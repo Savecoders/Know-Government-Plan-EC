@@ -2,6 +2,7 @@ import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { createStuffDocumentsChain } from 'langchain/chains/combine_documents';
 import { createRetrievalChain } from 'langchain/chains/retrieval';
 import { createVectorStore } from '@/lib/pdf-loader';
+import { StringOutputParser } from '@langchain/core/output_parsers';
 import { NextResponse } from 'next/server';
 import { PromptTemplate } from '@langchain/core/prompts';
 
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
     const documentChain = await createStuffDocumentsChain({
       llm: model,
       prompt,
+      outputParser: new StringOutputParser(),
     });
 
     // Create retrieval chain

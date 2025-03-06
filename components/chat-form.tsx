@@ -7,6 +7,8 @@ import { Button } from './ui/button';
 import { ArrowUpIcon } from 'lucide-react';
 import { TooltipContent } from '@radix-ui/react-tooltip';
 import { AutoResizeTextarea } from './ui/autoresize-textarea';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -73,7 +75,7 @@ export function ChatForm({ className, ...props }: React.ComponentProps<'form'>) 
                     data-role={message.role}
                     className="max-w-[80%] rounded-xl px-3 py-2 text-sm data-[role=assistant]:self-start data-[role=assistant]:bg-gray-100 data-[role=assistant]:text-black data-[role=user]:self-end data-[role=user]:bg-blue-500 data-[role=user]:text-white"
                   >
-                    {message.content}
+                    <Markdown remarkPlugins={[remarkGfm]}>{message.content}</Markdown>
                   </div>
                 ))}
                 {/* loading assistant */}
