@@ -1,10 +1,9 @@
 'use client';
 import { cn } from '@/lib/utils';
-import { formatDate } from '@/lib/utils';
 import { useState } from 'react';
 import { Tooltip, TooltipTrigger } from './ui/tooltip';
 import { Button } from './ui/button';
-import { ArrowUpIcon } from 'lucide-react';
+import { ArrowRight, ArrowUpIcon } from 'lucide-react';
 import { TooltipContent } from '@radix-ui/react-tooltip';
 import { AutoResizeTextarea } from './ui/autoresize-textarea';
 import Markdown from 'react-markdown';
@@ -18,7 +17,8 @@ interface Message {
 export function ChatForm({ className, ...props }: React.ComponentProps<'form'>) {
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [hasTyped, setHasTyped] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && e.ctrlKey) {
@@ -32,7 +32,14 @@ export function ChatForm({ className, ...props }: React.ComponentProps<'form'>) 
     if (!question.trim()) return;
     const userMessage: Message = { role: 'user', content: question };
     setMessages((prev) => [...prev, userMessage]);
-    setLoading(true);
+    setIsLoading(true);
+
+    // Vibrate when sending a message
+    // verify if the browser supports the vibration API
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50);
+    }
+
     try {
       const response = await fetch('/api/ask', {
         method: 'POST',
@@ -45,7 +52,6 @@ export function ChatForm({ className, ...props }: React.ComponentProps<'form'>) 
       const data = await response.json();
       const assistantMessage: Message = { role: 'assistant', content: data.answer };
       setMessages((prev) => [...prev, assistantMessage]);
-      setQuestion('');
     } catch (error) {
       const errorMessage: Message = {
         role: 'assistant',
@@ -53,14 +59,33 @@ export function ChatForm({ className, ...props }: React.ComponentProps<'form'>) 
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
-      setLoading(false);
+      // Vibrate when receiving a message
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
+
+      setQuestion('');
+      setIsLoading(false);
+      setHasTyped(false);
     }
   };
+
+  const handleQuestionChange = (newValue: string) => {
+    if (!isLoading) {
+      setQuestion(newValue);
+      if (newValue.trim() !== '' && !hasTyped) {
+        setHasTyped(true);
+      } else if (newValue.trim() === '' && hasTyped) {
+        setHasTyped(false);
+      }
+    }
+  };
+
   return (
     <>
       <main
         className={cn(
-          'ring-none mx-auto flex h-svh max-h-svh w-full max-w-[35rem] flex-col items-stretch border-none',
+          'ring-none mx-auto flex h-svh max-h-svh w-full max-w-[45rem] flex-col items-stretch border-none',
           className,
         )}
         {...props}
@@ -79,7 +104,7 @@ export function ChatForm({ className, ...props }: React.ComponentProps<'form'>) 
                   </div>
                 ))}
                 {/* loading assistant */}
-                {loading && (
+                {isLoading && (
                   <div className="max-w-[80%] self-start rounded-xl bg-gray-100 px-3 py-2 text-sm text-black">
                     Loading...
                   </div>
@@ -103,19 +128,34 @@ export function ChatForm({ className, ...props }: React.ComponentProps<'form'>) 
 
         <form
           onSubmit={handleSubmitQuestion}
-          className="border-input bg-background focus-within:ring-ring/10 focus-within:ring-offset-background relative mx-6 mb-6 flex items-center rounded-[16px] border px-3 py-1.5 pr-8 text-sm focus-within:ring-2 focus-within:ring-offset-0 focus-within:outline-none"
+          className="border-input bg-background focus-within:ring-ring/10 focus-within:ring-offset-background relative mx-6 mb-6 flex items-center gap-3 rounded-[16px] border p-5 pr-14 text-sm focus-within:ring-2 focus-within:ring-offset-0 focus-within:outline-none"
         >
           <AutoResizeTextarea
             onKeyDown={handleKeyDown}
-            onChange={(v) => setQuestion(v)}
+            onChange={handleQuestionChange}
             value={question}
             placeholder="Enter a message"
-            className="placeholder:text-muted-foreground flex-1 bg-transparent focus:outline-none"
+            className="placeholder:text-muted-foreground max-h-[120px] min-h-[24px] w-full flex-1 bg-transparent focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
           />
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="sm" className="absolute right-1 bottom-1 size-6 rounded-full">
-                <ArrowUpIcon size={16} />
+              <Button
+                type="submit"
+                variant="outline"
+                size="icon"
+                className={cn(
+                  'absolute right-4 bottom-4 size-6 h-8 w-8 flex-shrink-0 rounded-full border-0 transition-all duration-200',
+                  hasTyped ? 'light:bg-zinc-900 scale-110 dark:bg-zinc-200' : 'bg-gray-200',
+                )}
+                disabled={!question.trim() || isLoading}
+              >
+                <ArrowUpIcon
+                  className={cn(
+                    'h-4 w-4 transition-colors',
+                    hasTyped ? 'light:text-white dark:text-zinc-950' : 'text-gray-500',
+                  )}
+                />
+                <span className="sr-only">Submit</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent sideOffset={12}>Submit</TooltipContent>
