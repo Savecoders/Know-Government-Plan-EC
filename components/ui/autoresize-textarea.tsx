@@ -29,6 +29,12 @@ export function AutoResizeTextarea({ className, value, onChange, ...props }: Aut
       value={value}
       ref={textareaRef}
       rows={1}
+      onFocus={() => {
+        // Ensure the textarea is scrolled into view when focused
+        if (textareaRef.current) {
+          textareaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }}
       onChange={(e) => {
         onChange(e.target.value);
         resizeTextarea();
