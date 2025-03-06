@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     // Create Gemini model with Langchain
     const model = new ChatGoogleGenerativeAI({
-      modelName: 'gemini-2.0-flash',
+      modelName: 'gemini-2.0-flash-lite',
       apiKey: process.env.GEMINI_API_KEY,
       temperature: 0.7,
       maxRetries: 3,
