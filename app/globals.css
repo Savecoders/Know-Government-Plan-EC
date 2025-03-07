@@ -196,3 +196,16 @@ textarea::-webkit-scrollbar-thumb:hover {
     overflow: hidden;
   }
 }
+
+/* .assistant > ul > li > ul > li {
+  padding-left: 0.5rem;
+  margin-top: 0.4rem;
+}
+.assistant > ul > li > ol > li {
+  padding-left: 0.5rem;
+  margin-top: 0.4rem;
+} */
+
+/* .assistant {
+  line-height: 1.5rem;
+} */
