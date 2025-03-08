@@ -1,6 +1,6 @@
 'use client';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Tooltip, TooltipTrigger } from './ui/tooltip';
 import { Button } from './ui/button';
 import { ArrowRight, ArrowUpIcon } from 'lucide-react';
@@ -20,6 +20,7 @@ export function ChatForm({ className, ...props }: React.ComponentProps<'form'>) 
   const [messages, setMessages] = useState<Message[]>([]);
   const [hasTyped, setHasTyped] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && e.ctrlKey) {
@@ -83,6 +84,14 @@ export function ChatForm({ className, ...props }: React.ComponentProps<'form'>) 
     }
   };
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
+
   return (
     <>
       <main className={cn('ring-none mx-auto flex h-svh flex-col overflow-hidden', className)} {...props}>
@@ -119,6 +128,7 @@ export function ChatForm({ className, ...props }: React.ComponentProps<'form'>) 
                     Loading...
                   </div>
                 )}
+                <div ref={messagesEndRef} />
               </div>
             ) : (
               <header className="m-auto flex max-w-96 flex-col gap-5 text-center">
