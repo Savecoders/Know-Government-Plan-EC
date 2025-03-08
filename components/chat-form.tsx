@@ -86,8 +86,13 @@ export function ChatForm({ className, ...props }: React.ComponentProps<'form'>) 
   return (
     <>
       <main className={cn('ring-none mx-auto flex h-svh flex-col overflow-hidden', className)} {...props}>
-        <div className="flex-grow overflow-y-scroll scroll-smooth px-6 pt-12 pb-32 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-zinc-200 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-zinc-100 dark:[&::-webkit-scrollbar-track]:bg-neutral-700">
-          <div className="mx-auto max-w-3xl space-y-4">
+        <div className="flex-grow overflow-y-scroll scroll-smooth px-6 pt-12 pb-32 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-zinc-200 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-transparent dark:[&::-webkit-scrollbar-track]:bg-transparent">
+          <div
+            className={cn(
+              'mx-auto max-w-3xl space-y-4',
+              messages.length > 0 ? '' : 'flex h-full flex-col justify-center',
+            )}
+          >
             {messages.length > 0 ? (
               <div className="my-8 flex h-fit min-h-full scroll-m-0 flex-col gap-6">
                 {messages.map((message, index) => (
